@@ -11,9 +11,8 @@ module "cloudtrail_dataplane" {
   providers = {
     aws = aws.eu-west-1
   }
-  source = "../../../modules/cloudtrail_datatrail"
-  basename = "test"
-  environment = var.environment
+  source = "github.com/vectranetworks/terraform-aws-cloudtrail-replication"
+  bucket_name = "<new bucket name>"
   monitored_bucket_arns = ["<arns of the bucket being monitored>"]
 }
 ```
@@ -25,9 +24,8 @@ module "cloudtrail_generator" {
   providers = {
     aws = aws.eu-west-2
   }
-  source = "../../../modules/cloudtrail_datatrail"
-  basename = "debug"
-  environment = "test"
+  source = "github.com/vectranetworks/terraform-aws-cloudtrail-replication"
+  bucket_name = "<new bucket name>"
   replication_bucket_destination_arn = "<destination bucket arn>"
   replication_account_destination = "<12 digit destination account id>"
 }
