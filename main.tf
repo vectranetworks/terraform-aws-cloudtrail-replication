@@ -9,7 +9,6 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 locals {
-  bucket_name = "${var.bucket_name}-cloudtrail"
   role_name   = "${var.bucket_name}CloudtrailReplication"
 }
 
@@ -23,7 +22,7 @@ data aws_iam_policy_document source_cloudtrail_bucket_resource_policy {
       type        = "Service"
     }
     actions   = ["s3:GetBucketAcl"]
-    resources = ["arn:aws:s3:::${local.bucket_name}"]
+    resources = ["arn:aws:s3:::${var.bucket_name}"]
   }
   statement {
     sid = "AWSCloudTrailWrite"
@@ -33,7 +32,7 @@ data aws_iam_policy_document source_cloudtrail_bucket_resource_policy {
     }
     actions = ["s3:PutObject"]
     resources = [
-      "arn:aws:s3:::${local.bucket_name}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
+      "arn:aws:s3:::${var.bucket_name}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
     ]
     condition {
       test     = "StringEquals"
@@ -44,7 +43,7 @@ data aws_iam_policy_document source_cloudtrail_bucket_resource_policy {
 }
 
 resource "aws_s3_bucket" "source_cloudtrail_bucket" {
-  bucket        = local.bucket_name
+  bucket        = var.bucket_name
   force_destroy = true
   # this role is defined further down the file, around line 100
   policy = data.aws_iam_policy_document.source_cloudtrail_bucket_resource_policy.json
@@ -149,8 +148,8 @@ data aws_iam_policy_document source_bucket_replication_role_permissions {
     ]
     effect = "Allow"
     resources = [
-      "arn:aws:s3:::${local.bucket_name}", # no trailing slash
-      "arn:aws:s3:::${local.bucket_name}/*",
+      "arn:aws:s3:::${var.bucket_name}", # no trailing slash
+      "arn:aws:s3:::${var.bucket_name}/*",
       var.replication_bucket_destination_arn,
       "${var.replication_bucket_destination_arn}/*",
     ]
@@ -164,7 +163,7 @@ data aws_iam_policy_document source_bucket_replication_role_permissions {
     ]
     effect = "Allow"
     resources = [
-      "arn:aws:s3:::${local.bucket_name}/*",
+      "arn:aws:s3:::${var.bucket_name}/*",
       "${var.replication_bucket_destination_arn}/*",
     ]
   }
